@@ -49,7 +49,7 @@ namespace NuGet4Mono {
                 return;
             }
 
-            BuildSpec(assemblies);
+            WriteSpec(assemblies);
 
         }
 
@@ -62,7 +62,7 @@ namespace NuGet4Mono {
             p.WriteOptionDescriptions(Console.Out);
         }
 
-        static void BuildSpec(List<string> assemblies) {
+        static void WriteSpec(List<string> assemblies) {
 
             if (assemblies == null || assemblies.Count == 0)
                 throw new ArgumentNullException("Provide with at least 1 assembly");
@@ -71,16 +71,11 @@ namespace NuGet4Mono {
 
             Manifest m = ManifestFromAssemblies(assemblies, deps);
                
-            MemoryStream stream = new MemoryStream();
+            FileStream stream = new FileStream(m.Metadata.Id + ".nuspec", FileMode.Create);
 
             m.Save(stream);
 
-            stream.Seek(0, SeekOrigin.Begin);
-
-            Console.Out.Write(new StreamReader(stream).ReadToEnd());
-
-
-
+            stream.Close();
 
 
         }
@@ -207,7 +202,7 @@ namespace NuGet4Mono {
                 manifest.Metadata.LicenseUrl = ainfo.LicenseUrl.ToString();
                 
             // Project Url
-            if (ainfo.LicenseUrl != null)
+            if (ainfo.ProjectUrl != null)
                 manifest.Metadata.ProjectUrl = ainfo.ProjectUrl.ToString();
 
             // Tags
