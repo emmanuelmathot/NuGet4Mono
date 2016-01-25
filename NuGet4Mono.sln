@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet4Mono", "NuGet4Mono\NuGet4Mono.csproj", "{E9C54987-72C9-4EBE-A51B-CED9A2058D18}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet4Mono.Extensions", "NuGet4Mono.Extensions\NuGet4Mono.Extensions.csproj", "{13DDE050-366C-47B9-A755-BB72CBB94E6D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{13DDE050-366C-47B9-A755-BB72CBB94E6D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{13DDE050-366C-47B9-A755-BB72CBB94E6D}.Debug|x86.Build.0 = Debug|Any CPU
+		{13DDE050-366C-47B9-A755-BB72CBB94E6D}.Release|x86.ActiveCfg = Release|Any CPU
+		{13DDE050-366C-47B9-A755-BB72CBB94E6D}.Release|x86.Build.0 = Release|Any CPU
+		{E9C54987-72C9-4EBE-A51B-CED9A2058D18}.Debug|x86.ActiveCfg = Debug|x86
+		{E9C54987-72C9-4EBE-A51B-CED9A2058D18}.Debug|x86.Build.0 = Debug|x86
+		{E9C54987-72C9-4EBE-A51B-CED9A2058D18}.Release|x86.ActiveCfg = Release|x86
+		{E9C54987-72C9-4EBE-A51B-CED9A2058D18}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+EndGlobal
