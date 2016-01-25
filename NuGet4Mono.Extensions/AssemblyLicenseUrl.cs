@@ -14,7 +14,11 @@ namespace NuGet4Mono.Extensions {
         }
 
         public AssemblyLicenseUrlAttribute(string uri) {
-            licenseuri = new Uri(uri);
+            try {
+                licenseuri = new Uri(uri);
+            } catch {
+                licenseuri = null;       
+            }
         }
 
         public Uri LicenseUri {

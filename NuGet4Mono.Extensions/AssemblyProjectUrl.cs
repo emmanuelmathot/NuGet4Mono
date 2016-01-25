@@ -14,7 +14,11 @@ namespace NuGet4Mono.Extensions {
         }
 
         public AssemblyProjectUrlAttribute(string uri) {
-            projecturi = new Uri(uri);
+            try {
+                projecturi = new Uri(uri);
+            } catch {
+                projecturi = null;       
+            }
         }
 
         public Uri ProjectUri {

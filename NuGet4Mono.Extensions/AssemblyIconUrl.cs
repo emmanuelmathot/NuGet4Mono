@@ -14,7 +14,11 @@ namespace NuGet4Mono.Extensions {
         }
 
         public AssemblyIconUrlAttribute(string uri) {
-            iconuri = new Uri(uri);
+            try {
+                iconuri = new Uri(uri);
+            } catch {
+                iconuri = null;       
+            }
         }
 
         public Uri IconUri {
