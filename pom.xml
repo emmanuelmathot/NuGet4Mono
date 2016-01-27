@@ -11,16 +11,8 @@
 	<packaging>rpm</packaging>
 	<description>A tool to help using nuget with projects developed with Mono</description>
 	<version>0.1.0-SNAPSHOT</version>
-	<properties>
-		<redmine.projectID>opensearch-client</redmine.projectID>
-	</properties>
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.nuiton.jredmine</groupId>
-				<artifactId>jredmine-maven-plugin</artifactId>
-				<inherited>false</inherited>
-			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
