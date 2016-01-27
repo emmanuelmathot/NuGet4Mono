@@ -20,6 +20,14 @@
 				<include>*.exe</include>
 			</includes>
 		</fileSet>
+		<fileSet>
+			<directory>NuGet4Mono/bin/Debug</directory>
+			<outputDirectory>mono</outputDirectory>
+			<includes>
+				<include>*.dll</include>
+				<include>*.exe</include>
+			</includes>
+		</fileSet>
 	</fileSets>
 
 </assembly>

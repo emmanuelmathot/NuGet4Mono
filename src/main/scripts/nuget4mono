@@ -1,0 +1,3 @@
+#!/bin/sh
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/nuget4mono
+exec mono $MONO_OPTIONS /usr/lib/nuget4mono/NuGet4Mono.exe "$@"
