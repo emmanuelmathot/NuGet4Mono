@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.terradue</groupId>
 		<artifactId>t2-parent</artifactId>
-		<version>14</version>
+		<version>15-SNAPSHOT</version>
 	</parent>
 	<groupId>com.terradue.scoop</groupId>
 	<artifactId>nuget4mono</artifactId>
