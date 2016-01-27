@@ -45,6 +45,15 @@ namespace NuGet4Mono {
         }
 
         /// <summary>
+        /// Gets the application's version
+        /// </summary>
+        public Version SemVersion {
+            get {
+                return assembly.GetName().Version;
+            }
+        }
+
+        /// <summary>
         /// Gets the description about the application.
         /// </summary>
         public string Description {

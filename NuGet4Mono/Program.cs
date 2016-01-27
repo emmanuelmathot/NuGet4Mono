@@ -15,6 +15,7 @@ namespace NuGet4Mono {
         static int verbosity;
         static string spec_version;
         static string packages_config_path;
+        static string build_prefix;
 
         public static void Main(string[] args) {
 
@@ -24,12 +25,14 @@ namespace NuGet4Mono {
                     v => spec_version = v
                 }, { "p|packages=", "packages file path.",
                     v => packages_config_path = v
-                }, { "v", "increase debug message verbosity",
+                }, { "b|build=", "set the prefix for pre-release version with build number.",
+                    v => build_prefix = v
+                }, { "v", "increase debug message verbosity.",
                     v => {
                         if (v != null)
                             ++verbosity;
                     }
-                }, { "h|help",  "show this message and exit", 
+                }, { "h|help",  "show this message and exit.", 
                     v => show_help = v != null
                 },
             };
@@ -107,7 +110,12 @@ namespace NuGet4Mono {
             Manifest manifest = new Manifest();
 
             // Version
-            manifest.Metadata.Version = ainfo.Version;
+            if (!string.IsNullOrEmpty(build_prefix)) {
+                Version semver = ainfo.SemVersion;
+                manifest.Metadata.Version = string.Format("{0}.{1}.{2}-{3}{4}", semver.Major, semver.Minor, semver.Build, build_prefix, semver.Revision);
+            }
+            else
+                manifest.Metadata.Version = ainfo.Version;
 
             // Authors
             if (ainfo.Authors != null) {
