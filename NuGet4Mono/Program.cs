@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Text.RegularExpressions;
 
 namespace NuGet4Mono {
     class MainClass {
@@ -17,6 +18,7 @@ namespace NuGet4Mono {
         static string packages_config_path;
         static string build_prefix;
         static string revnumber;
+        static string gitflow;
 
         public static void Main(string[] args) {
 
@@ -30,6 +32,8 @@ namespace NuGet4Mono {
                     v => build_prefix = v
                 }, { "d|date", "if the prefix id set for pre-release version, replace the revision with the date.",
                     v => revnumber = DateTime.Now.ToString("yyyyMMddTHHmmss")
+                }, { "g|gitflow=", "gitflow branch (e.g. feature/mono4). Set the versionning accrding to gitflow branch. this option overrides date and build",
+                    v => gitflow = v
                 }, { "v", "increase debug message verbosity.",
                     v => {
                         if (v != null)
@@ -112,18 +116,58 @@ namespace NuGet4Mono {
 
             Manifest manifest = new Manifest();
 
+            string version_string = ainfo.Version;
+
+            Version semver = ainfo.SemVersion;
+
             // Version
             if (!string.IsNullOrEmpty(build_prefix)) {
-                Version semver = ainfo.SemVersion;
+                
                 if (string.IsNullOrEmpty(revnumber))
                     revnumber = semver.Revision.ToString();
-                if (string.IsNullOrEmpty(spec_version))
-                    manifest.Metadata.Version = string.Format("{0}.{1}.{2}-{3}{4}", semver.Major, semver.Minor, semver.Build, build_prefix, revnumber);
-                else
-                    manifest.Metadata.Version = spec_version;
+                version_string = string.Format("{0}.{1}.{2}-{3}{4}", semver.Major, semver.Minor, semver.Build, build_prefix, revnumber);
+                    
             }
-            else
-                manifest.Metadata.Version = ainfo.Version;
+
+            if (!string.IsNullOrEmpty(gitflow)) {
+                Match match = Regex.Match(gitflow, @"(?:(?'prefix'\w+)\/)?(?'branch'[\w_.]+)");
+                if (!match.Success)
+                    throw new FormatException("gitflow branch not valid : " + gitflow);
+                if (!string.IsNullOrEmpty(match.Groups["prefix"].Value)) {
+                    switch (match.Groups["prefix"].Value) {
+                        case "feature":
+                            version_string = string.Format("{0}.{1}.{2}-ft_{3}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value);
+                            break;
+                        case "hotfix":
+                            version_string = string.Format("{0}.{1}.{2}-hf_{3}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value);
+                            break;
+                        case "release":
+                            version_string = string.Format("{0}.{1}.{2}-rc_{3}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value);
+                            break;
+                        default:
+                            throw new FormatException("gitflow branch directory not valid : " + match.Groups["prefix"].Value);
+                    }
+                } else {
+                    switch (match.Groups["branch"].Value) {
+                        case "master":
+                            version_string = string.Format("{0}.{1}.{2}", semver.Major, semver.Minor, semver.Build);
+                            break;
+                        case "develop":
+                            version_string = string.Format("{0}.{1}.{2}-build{3}", semver.Major, semver.Minor, semver.Build, DateTime.Now.ToString("yyyyMMddTHHmmss"));
+                            break;
+                        default:
+                            throw new FormatException("gitflow main branch not valid : " + match.Groups["branch"].Value);
+                    }
+                }
+
+
+            }
+
+            if (!string.IsNullOrEmpty(spec_version)){
+                version_string = spec_version;
+            }
+
+            manifest.Metadata.Version = version_string;
 
             // Authors
             if (ainfo.Authors != null) {
