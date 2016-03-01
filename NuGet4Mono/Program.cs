@@ -117,7 +117,10 @@ namespace NuGet4Mono {
                 Version semver = ainfo.SemVersion;
                 if (string.IsNullOrEmpty(revnumber))
                     revnumber = semver.Revision.ToString();
-                manifest.Metadata.Version = string.Format("{0}.{1}.{2}-{3}{4}", semver.Major, semver.Minor, semver.Build, build_prefix, revnumber);
+                if (string.IsNullOrEmpty(spec_version))
+                    manifest.Metadata.Version = string.Format("{0}.{1}.{2}-{3}{4}", semver.Major, semver.Minor, semver.Build, build_prefix, revnumber);
+                else
+                    manifest.Metadata.Version = spec_version;
             }
             else
                 manifest.Metadata.Version = ainfo.Version;
