@@ -142,7 +142,7 @@ namespace NuGet4Mono {
                             version_string = string.Format("{0}.{1}.{2}-hf_{3}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value);
                             break;
                         case "release":
-                            version_string = string.Format("{0}.{1}.{2}-rc_{3}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value);
+                            version_string = string.Format("{0}.{1}.{2}-rc_{3}", semver.Major, semver.Minor, semver.Build, DateTime.Now.ToString("yyyyMMddTHHmmss"));
                             break;
                         default:
                             throw new FormatException("gitflow branch directory not valid : " + match.Groups["prefix"].Value);
