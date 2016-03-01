@@ -130,7 +130,7 @@ namespace NuGet4Mono {
             }
 
             if (!string.IsNullOrEmpty(gitflow)) {
-                Match match = Regex.Match(gitflow, @"(?:(?'prefix'\w+)\/)?(?'branch'[\w_.]+)");
+                Match match = Regex.Match(gitflow, @"(?:(?'origin'\w+)\/)?(?:(?'prefix'\w+)\/)?(?'branch'[\w_.]+)");
                 if (!match.Success)
                     throw new FormatException("gitflow branch not valid : " + gitflow);
                 if (!string.IsNullOrEmpty(match.Groups["prefix"].Value)) {
