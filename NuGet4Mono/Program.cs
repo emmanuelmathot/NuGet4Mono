@@ -130,19 +130,19 @@ namespace NuGet4Mono {
             }
 
             if (!string.IsNullOrEmpty(gitflow)) {
-                Match match = Regex.Match(gitflow, @"(?:(?'prefix'\w+)\/)?(?'branch'[\w_.]+)");
+                Match match = Regex.Match(gitflow, @"(?:(?'origin'\w+)\/)?(?:(?'prefix'\w+)\/)?(?'branch'[\w_.]+)");
                 if (!match.Success)
                     throw new FormatException("gitflow branch not valid : " + gitflow);
                 if (!string.IsNullOrEmpty(match.Groups["prefix"].Value)) {
                     switch (match.Groups["prefix"].Value) {
                         case "feature":
-                            version_string = string.Format("{0}.{1}.{2}-ft_{3}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value);
+                            version_string = string.Format("{0}.{1}.{2}-ft{3}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value.Replace("_","").Replace(".",""));
                             break;
                         case "hotfix":
-                            version_string = string.Format("{0}.{1}.{2}-hf_{3}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value);
+                            version_string = string.Format("{0}.{1}.{2}-hf{3}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value.Replace("_","").Replace(".",""));
                             break;
                         case "release":
-                            version_string = string.Format("{0}.{1}.{2}-rc_{3}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value);
+                            version_string = string.Format("{0}.{1}.{2}-rc{3}", semver.Major, semver.Minor, semver.Build, DateTime.Now.ToString("yyyyMMddTHHmmss"));
                             break;
                         default:
                             throw new FormatException("gitflow branch directory not valid : " + match.Groups["prefix"].Value);
