@@ -71,6 +71,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>rpm-maven-plugin</artifactId>
+				<version>2.1.5</version>
 				<extensions>true</extensions>
 				<configuration>
 					<copyright>2016, Terradue</copyright>
@@ -91,6 +92,7 @@
 						<mapping>
 							<directory>/usr/bin</directory>
 							<filemode>755</filemode>
+							<directoryIncluded>false</directoryIncluded>
 							<sources>
 								<source>
 									<location>${basedir}/src/main/scripts/nuget4mono</location>
