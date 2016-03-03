@@ -4,13 +4,13 @@
 	<parent>
 		<groupId>com.terradue</groupId>
 		<artifactId>t2-parent</artifactId>
-		<version>15-SNAPSHOT</version>
+		<version>15</version>
 	</parent>
 	<groupId>com.terradue.scoop</groupId>
 	<artifactId>nuget4mono</artifactId>
 	<packaging>rpm</packaging>
 	<description>A tool to help using nuget with projects developed with Mono</description>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>0.2.1</version>
 	<build>
 		<plugins>
 			<plugin>
@@ -71,6 +71,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>rpm-maven-plugin</artifactId>
+				<version>2.1.5</version>
 				<extensions>true</extensions>
 				<configuration>
 					<copyright>2016, Terradue</copyright>
@@ -91,6 +92,7 @@
 						<mapping>
 							<directory>/usr/bin</directory>
 							<filemode>755</filemode>
+							<directoryIncluded>false</directoryIncluded>
 							<sources>
 								<source>
 									<location>${basedir}/src/main/scripts/nuget4mono</location>

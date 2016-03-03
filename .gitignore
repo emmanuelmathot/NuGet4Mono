@@ -40,3 +40,4 @@ Thumbs.db
 *.dotCover
 NuGet4Mono.*.nupkg
 *.nuspec
+target
