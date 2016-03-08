@@ -10,7 +10,7 @@ using System.Runtime.Versioning;
 [assembly: AssemblyProjectUrl("https://github.com/emmanuelmathot/NuGet4Mono")]
 [assembly: AssemblyLicenseUrl("https://github.com/emmanuelmathot/NuGet4Mono/License")]
 //[assembly: TargetFramework(".NETFramework,Version=v4.0")]
-[assembly: AssemblyVersion("0.2.1.*")]
-[assembly: AssemblyInformationalVersion("0.2.1")]
+[assembly: AssemblyVersion("0.3.0.*")]
+[assembly: AssemblyInformationalVersion("0.3.0")]
 
 

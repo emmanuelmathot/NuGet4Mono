@@ -136,10 +136,10 @@ namespace NuGet4Mono {
                 if (!string.IsNullOrEmpty(match.Groups["prefix"].Value)) {
                     switch (match.Groups["prefix"].Value) {
                         case "feature":
-                            version_string = string.Format("{0}.{1}.{2}-ft{3}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value.Replace("_","").Replace(".",""));
+                            version_string = string.Format("{0}.{1}.{2}-ft{3}{4}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value.Replace("_","").Replace(".",""), DateTime.Now.ToString("yyyyMMddTHHmmss"));
                             break;
                         case "hotfix":
-                            version_string = string.Format("{0}.{1}.{2}-hf{3}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value.Replace("_","").Replace(".",""));
+                            version_string = string.Format("{0}.{1}.{2}-hf{3}{4}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value.Replace("_","").Replace(".",""), DateTime.Now.ToString("yyyyMMddTHHmmss"));
                             break;
                         case "release":
                             version_string = string.Format("{0}.{1}.{2}-rc{3}", semver.Major, semver.Minor, semver.Build, DateTime.Now.ToString("yyyyMMddTHHmmss"));
