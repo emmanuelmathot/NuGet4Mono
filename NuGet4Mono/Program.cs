@@ -261,19 +261,19 @@ namespace NuGet4Mono {
 
             try{
                 var assembly = Assembly.LoadFile(content);
-                return ManifestFileForAssembly(assembly);
+                return ManifestFileForAssembly(assembly, content);
             }catch (Exception){
                 //is not an assembly, we add as content
                 return ManifestFileForContent(content);
             }
         }
 
-        static ManifestFile ManifestFileForAssembly(Assembly assembly){
+        static ManifestFile ManifestFileForAssembly(Assembly assembly, string path){
             ManifestFile mf = new ManifestFile();
 
             AssemblyInfo ainfo = new AssemblyInfo(assembly);
 
-            mf.Source = assembly.ManifestModule.Name;
+            mf.Source = path;
 
             string version = "";
 
@@ -304,7 +304,40 @@ namespace NuGet4Mono {
             var source = contentlist[0];
             var target = contentlist.Length > 1 ? contentlist[1] : contentlist[0];
 
-            if (Directory.Exists(source)) {
+            bool exists = false;
+            if (source.Contains("/")) {
+
+                if(source.Contains("/**/")){
+                    var dir = source.Substring(0, source.LastIndexOf("/**/"));
+                    var pattern = source.Substring(source.LastIndexOf("/**/") + 4);
+                    string [] subdirectoryEntries = Directory.GetDirectories(dir);
+                    foreach (string subdirectory in subdirectoryEntries) {
+                        var subdirectory2 = subdirectory.Substring(subdirectory.LastIndexOf("/") + 1);
+                        var source2 = source.Replace("/**/", "/" + subdirectory2 + "/");
+                        var dir2 = source2.Substring(0, source2.LastIndexOf("/"));
+                        var pattern2 = source2.Substring(source2.LastIndexOf("/") + 1);
+                        try{
+                            Directory.EnumerateFiles(dir2, pattern2).Any();
+                            exists = true;
+                            break;
+                        }catch(Exception){
+                        }
+                    }
+                } else {
+                    var dir = source.Substring(0, source.LastIndexOf("/"));
+                    var pattern = source.Substring(source.LastIndexOf("/") + 1);
+                    try{
+                        Directory.EnumerateFiles(dir, pattern).Any();
+                        exists = true;
+                    }catch(Exception){
+                    }
+                }
+            } else {
+                FileInfo fileinfo = new FileInfo(source);
+                exists = fileinfo.Exists;
+            }
+
+            if (exists) {
                 ManifestFile mf = new ManifestFile();
                 mf.Source = source;
                 mf.Target = target;
