@@ -19,6 +19,7 @@ namespace NuGet4Mono {
         static string build_prefix;
         static string revnumber;
         static string gitflow;
+        static List<string> content;
 
         public static void Main(string[] args) {
 
@@ -44,9 +45,9 @@ namespace NuGet4Mono {
                 },
             };
 
-            List<string> assemblies;
+            List<string> contents;
             try {
-                assemblies = p.Parse(args);
+                contents = p.Parse(args);
             } catch (OptionException e) {
                 Console.Write("nuget4mono: ");
                 Console.WriteLine(e.Message);
@@ -59,7 +60,7 @@ namespace NuGet4Mono {
                 return;
             }
 
-            WriteSpec(assemblies);
+            WriteSpec(contents);
 
         }
 
@@ -79,14 +80,13 @@ namespace NuGet4Mono {
 
             IEnumerable<PackageReference> deps = GetDependencies();
 
-            Manifest m = ManifestFromAssemblies(assemblies, deps);
+            Manifest m = ManifestFromContents(assemblies, deps);
                
             FileStream stream = new FileStream(m.Metadata.Id + ".nuspec", FileMode.Create);
 
             m.Save(stream);
 
             stream.Close();
-
 
         }
 
@@ -101,32 +101,121 @@ namespace NuGet4Mono {
                 }
             }
 
-            if (packages_config_path == null)
-                return null;
+            if (packages_config_path == null) return null;
 
             var packageReferenceFile = new PackageReferenceFile(packages_config_path);
             return packageReferenceFile.GetPackageReferences();
         }
 
-        static Manifest ManifestFromAssemblies(List<string> assemblies, IEnumerable<PackageReference> deps) {
+        static Manifest ManifestFromContents(List<string> contents, IEnumerable<PackageReference> deps) {
 
-            var assembly = Assembly.LoadFrom(assemblies.First());
+            Manifest manifest = null;
+
+            //Get first Assembly to initiate the manifest
+            foreach (string assemblyPath in contents) {
+                try{
+                    var assembly = Assembly.LoadFile(assemblyPath);
+                    manifest = InitiateManifestFromAssembly(assembly, deps);
+                    break;
+                }catch(Exception){
+                }
+            }
+
+            if (manifest != null) {
+
+                manifest.Files = new List<ManifestFile>();
+
+                //Add all contents as file in the assembly
+                foreach (string content in contents) {
+                    var mf = ManifestFileFromContent(content);
+                    if(mf != null) manifest.Files.Add(mf);
+                }
+
+            }
+
+            return manifest;
+
+        }
+
+        static Manifest InitiateManifestFromAssembly(Assembly assembly, IEnumerable<PackageReference> deps){
+            Manifest manifest = new Manifest();
 
             AssemblyInfo ainfo = new AssemblyInfo(assembly);
 
-            Manifest manifest = new Manifest();
+            //Version
+            manifest.Metadata.Version = ManifestVersionFromAssembly(ainfo);
+
+            // Copyright
+            manifest.Metadata.Copyright = ainfo.Copyright;
+
+            // Authors
+            if (ainfo.Authors != null) {
+                manifest.Metadata.Authors = ainfo.Authors.Keys.Aggregate((key, next) => key + "," + next);
+                manifest.Metadata.Owners = ainfo.Authors.Keys.Aggregate((key, next) => key + "," + next);
+            }
+
+            // Description
+            manifest.Metadata.Description = ainfo.Description;
+
+            // Icon Url
+            if ( ainfo.IconUrl != null )
+                manifest.Metadata.IconUrl = ainfo.IconUrl.ToString();
+
+            // Id
+            manifest.Metadata.Id = ainfo.ProductTitle;
+
+            // License Url
+            if (ainfo.LicenseUrl != null)
+                manifest.Metadata.LicenseUrl = ainfo.LicenseUrl.ToString();
+
+            // Project Url
+            if (ainfo.ProjectUrl != null)
+                manifest.Metadata.ProjectUrl = ainfo.ProjectUrl.ToString();
+
+            // Tags
+            manifest.Metadata.Tags = ainfo.Tags;
+
+            // Title
+            manifest.Metadata.Title = ainfo.ProductTitle;
+
+            // Dependencies
+            if (deps != null) {
+                manifest.Metadata.DependencySets = new List<ManifestDependencySet>();
+
+                foreach (var frameworkVersion in deps.Select<PackageReference, FrameworkName>(pr => pr.TargetFramework).Distinct().ToArray()) {
+
+                    NetPortableProfile npp = new NetPortableProfile("test", new FrameworkName[1]{ frameworkVersion });
+
+                    ManifestDependencySet mds = new ManifestDependencySet();
+                    mds.Dependencies = new List<ManifestDependency>();
+                    mds.TargetFramework = npp.CustomProfileString;
+
+                    manifest.Metadata.DependencySets.Add(mds);
+                    foreach (var dep in deps.Where(d => d.TargetFramework == frameworkVersion).ToArray()) {
+
+                        ManifestDependency md = new ManifestDependency();
+                        md.Id = dep.Id;
+                        md.Version = dep.Version.ToNormalizedString();
+
+                        mds.Dependencies.Add(md);
+
+
+                    }
+                }
+            }
+
+            return manifest;
+        }
+
+        static string ManifestVersionFromAssembly(AssemblyInfo ainfo){
 
             string version_string = ainfo.Version;
 
             Version semver = ainfo.SemVersion;
 
-            // Version
             if (!string.IsNullOrEmpty(build_prefix)) {
-                
-                if (string.IsNullOrEmpty(revnumber))
-                    revnumber = semver.Revision.ToString();
+                if (string.IsNullOrEmpty(revnumber)) revnumber = semver.Revision.ToString();
                 version_string = string.Format("{0}.{1}.{2}-{3}{4}", semver.Major, semver.Minor, semver.Build, build_prefix, revnumber);
-                    
             }
 
             if (!string.IsNullOrEmpty(gitflow)) {
@@ -159,121 +248,70 @@ namespace NuGet4Mono {
                             throw new FormatException("gitflow main branch not valid : " + match.Groups["branch"].Value);
                     }
                 }
-
-
             }
-
             if (!string.IsNullOrEmpty(spec_version)){
                 version_string = spec_version;
             }
+            return version_string;
+        }
 
-            manifest.Metadata.Version = version_string;
+        static ManifestFile ManifestFileFromContent(string content){
 
-            // Authors
-            if (ainfo.Authors != null) {
-                manifest.Metadata.Authors = ainfo.Authors.Keys.Aggregate((key, next) =>
-                                                                        key + "," + next);
-                manifest.Metadata.Owners = ainfo.Authors.Keys.Aggregate((key, next) =>
-                                                                        key + "," + next);
+            if (content.Contains(",")) return ManifestFileForContent(content);
+
+            try{
+                var assembly = Assembly.LoadFile(content);
+                return ManifestFileForAssembly(assembly);
+            }catch (Exception){
+                //is not an assembly, we add as content
+                return ManifestFileForContent(content);
+            }
+        }
+
+        static ManifestFile ManifestFileForAssembly(Assembly assembly){
+            ManifestFile mf = new ManifestFile();
+
+            AssemblyInfo ainfo = new AssemblyInfo(assembly);
+
+            mf.Source = assembly.ManifestModule.Name;
+
+            string version = "";
+
+            if (string.IsNullOrEmpty(ainfo.TargetFramework)) { 
+
+                if (assembly.ImageRuntimeVersion.StartsWith("v2.0"))
+                    version = "/net20";
+                if (assembly.ImageRuntimeVersion.StartsWith("v3.5"))
+                    version = "/net35";
+                if (assembly.ImageRuntimeVersion.StartsWith("v4.0"))
+                    version = "/net40";
+                if (assembly.ImageRuntimeVersion.StartsWith("v4.5"))
+                    version = "/net45";
+            }
+            else{
+
+                NetPortableProfile npp = new NetPortableProfile("test", new FrameworkName[1]{new FrameworkName(ainfo.TargetFramework)});
+                version = "/" + npp.CustomProfileString;
             }
 
-            // Files Assembly
-            manifest.Files = new List<ManifestFile>();
+            mf.Target = String.Format("lib{0}", version);
 
-            foreach (string assemblyPath in assemblies) {
+            return mf;
+        }
 
+        static ManifestFile ManifestFileForContent(string contentPath){
+            var contentlist = contentPath.Split(",".ToCharArray());
+            var source = contentlist[0];
+            var target = contentlist.Length > 1 ? contentlist[1] : contentlist[0];
+
+            if (Directory.Exists(source)) {
                 ManifestFile mf = new ManifestFile();
-
-                FileInfo file = new FileInfo(assemblyPath);
-
-                if (file.Exists) {
-
-                    assembly = Assembly.LoadFile(assemblyPath);
-
-                    mf.Source = assemblyPath;
-
-                    string version = "";
-
-                    if (string.IsNullOrEmpty(ainfo.TargetFramework)) { 
-                        
-                        if (assembly.ImageRuntimeVersion.StartsWith("v2.0"))
-                            version = "/net20";
-                        if (assembly.ImageRuntimeVersion.StartsWith("v3.5"))
-                            version = "/net35";
-                        if (assembly.ImageRuntimeVersion.StartsWith("v4.0"))
-                            version = "/net40";
-                        if (assembly.ImageRuntimeVersion.StartsWith("v4.5"))
-                            version = "/net45";
-                    }
-                    else{
-
-                        NetPortableProfile npp = new NetPortableProfile("test", new FrameworkName[1]{new FrameworkName(ainfo.TargetFramework)});
-                        version = "/" + npp.CustomProfileString;
-                    }
-                       
-                    mf.Target = String.Format("lib{0}", version);
-
-                    manifest.Files.Add(mf);
-                }
-
+                mf.Source = source;
+                mf.Target = target;
+                return mf;
+            } else {
+                return null;
             }
-
-            // Copyright
-            manifest.Metadata.Copyright = ainfo.Copyright;
-
-            // Dependencies
-            if (deps != null) {
-                manifest.Metadata.DependencySets = new List<ManifestDependencySet>();
-
-                foreach (var frameworkVersion in deps.Select<PackageReference, FrameworkName>(pr => pr.TargetFramework).Distinct().ToArray()) {
-
-                    NetPortableProfile npp = new NetPortableProfile("test", new FrameworkName[1]{ frameworkVersion });
-
-                    ManifestDependencySet mds = new ManifestDependencySet();
-                    mds.Dependencies = new List<ManifestDependency>();
-                    mds.TargetFramework = npp.CustomProfileString;
-
-                    manifest.Metadata.DependencySets.Add(mds);
-                    foreach (var dep in deps.Where(d => d.TargetFramework == frameworkVersion).ToArray()) {
-                    
-                        ManifestDependency md = new ManifestDependency();
-                        md.Id = dep.Id;
-                        md.Version = dep.Version.ToNormalizedString();
-
-                        mds.Dependencies.Add(md);
-                   
-
-                    }
-                }
-            }
-
-            // Description
-            manifest.Metadata.Description = ainfo.Description;
-
-            // Icon Url
-            if ( ainfo.IconUrl != null )
-                manifest.Metadata.IconUrl = ainfo.IconUrl.ToString();
-            
-            // Id
-            manifest.Metadata.Id = ainfo.ProductTitle;
-
-            // License Url
-            if (ainfo.LicenseUrl != null)
-                manifest.Metadata.LicenseUrl = ainfo.LicenseUrl.ToString();
-                
-            // Project Url
-            if (ainfo.ProjectUrl != null)
-                manifest.Metadata.ProjectUrl = ainfo.ProjectUrl.ToString();
-
-            // Tags
-            manifest.Metadata.Tags = ainfo.Tags;
-
-            // Title
-            manifest.Metadata.Title = ainfo.ProductTitle;
-
-
-            return manifest;
-
         }
 
     }
