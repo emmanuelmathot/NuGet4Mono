@@ -41,3 +41,4 @@ Thumbs.db
 NuGet4Mono.*.nupkg
 *.nuspec
 target
+/.vs
