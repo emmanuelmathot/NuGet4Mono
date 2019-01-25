@@ -29,6 +29,7 @@
 							<arguments>
 								<argument>restore</argument>
 								<argument>-NonInteractive</argument>
+                <argument>-MSBuild 14</argument>
 							</arguments>
 						</configuration>
 					</execution>
