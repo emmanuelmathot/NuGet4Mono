@@ -8,8 +8,10 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 
-namespace NuGet4Mono {
-    class MainClass {
+namespace NuGet4Mono
+{
+    class MainClass
+    {
 
         static private log4net.ILog log = log4net.LogManager.GetLogger
             (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -21,7 +23,8 @@ namespace NuGet4Mono {
         static string gitflow;
         static List<string> content;
 
-        public static void Main(string[] args) {
+        public static void Main(string[] args)
+        {
 
             bool show_help = false;
 
@@ -40,22 +43,26 @@ namespace NuGet4Mono {
                         if (v != null)
                             ++verbosity;
                     }
-                }, { "h|help",  "show this message and exit.", 
+                }, { "h|help",  "show this message and exit.",
                     v => show_help = v != null
                 },
             };
 
             List<string> contents;
-            try {
+            try
+            {
                 contents = p.Parse(args);
-            } catch (OptionException e) {
+            }
+            catch (OptionException e)
+            {
                 Console.Write("nuget4mono: ");
                 Console.WriteLine(e.Message);
                 Console.WriteLine("Try `nuget4mono --help' for more information.");
                 return;
             }
 
-            if (show_help) {
+            if (show_help)
+            {
                 ShowHelp(p);
                 return;
             }
@@ -64,7 +71,8 @@ namespace NuGet4Mono {
 
         }
 
-        static void ShowHelp(OptionSet p) {
+        static void ShowHelp(OptionSet p)
+        {
             Console.WriteLine("Usage: greet [OPTIONS]+ message");
             Console.WriteLine("Greet a list of individuals with an optional message.");
             Console.WriteLine("If no message is specified, a generic greeting is used.");
@@ -73,7 +81,8 @@ namespace NuGet4Mono {
             p.WriteOptionDescriptions(Console.Out);
         }
 
-        static void WriteSpec(List<string> assemblies) {
+        static void WriteSpec(List<string> assemblies)
+        {
 
             if (assemblies == null || assemblies.Count == 0)
                 throw new ArgumentNullException("Provide with at least 1 assembly");
@@ -81,7 +90,7 @@ namespace NuGet4Mono {
             IEnumerable<PackageReference> deps = GetDependencies();
 
             Manifest m = ManifestFromContents(assemblies, deps);
-               
+
             FileStream stream = new FileStream(m.Metadata.Id + ".nuspec", FileMode.Create);
 
             m.Save(stream);
@@ -90,12 +99,15 @@ namespace NuGet4Mono {
 
         }
 
-        static IEnumerable<PackageReference> GetDependencies() {
+        static IEnumerable<PackageReference> GetDependencies()
+        {
 
-            if (string.IsNullOrEmpty(packages_config_path)) {
+            if (string.IsNullOrEmpty(packages_config_path))
+            {
                 var currentDir = Directory.GetCurrentDirectory();
                 string[] files = Directory.GetFiles(currentDir, "packages.config");
-                if (files.Length == 1) {
+                if (files.Length == 1)
+                {
                     packages_config_path = files[0];
                     log.DebugFormat("packages.config found: {0}", packages_config_path);
                 }
@@ -107,28 +119,35 @@ namespace NuGet4Mono {
             return packageReferenceFile.GetPackageReferences();
         }
 
-        static Manifest ManifestFromContents(List<string> contents, IEnumerable<PackageReference> deps) {
+        static Manifest ManifestFromContents(List<string> contents, IEnumerable<PackageReference> deps)
+        {
 
             Manifest manifest = null;
 
             //Get first Assembly to initiate the manifest
-            foreach (string assemblyPath in contents) {
-                try{
+            foreach (string assemblyPath in contents)
+            {
+                try
+                {
                     var assembly = Assembly.LoadFile(assemblyPath);
                     manifest = InitiateManifestFromAssembly(assembly, deps);
                     break;
-                }catch(Exception e){
+                }
+                catch (Exception e)
+                {
                 }
             }
 
-            if (manifest != null) {
+            if (manifest != null)
+            {
 
                 manifest.Files = new List<ManifestFile>();
 
                 //Add all contents as file in the assembly
-                foreach (string content in contents) {
+                foreach (string content in contents)
+                {
                     var mf = ManifestFileFromContent(content);
-                    if(mf != null) manifest.Files.Add(mf);
+                    if (mf != null) manifest.Files.Add(mf);
                 }
 
             }
@@ -137,7 +156,8 @@ namespace NuGet4Mono {
 
         }
 
-        static Manifest InitiateManifestFromAssembly(Assembly assembly, IEnumerable<PackageReference> deps){
+        static Manifest InitiateManifestFromAssembly(Assembly assembly, IEnumerable<PackageReference> deps)
+        {
             Manifest manifest = new Manifest();
 
             AssemblyInfo ainfo = new AssemblyInfo(assembly);
@@ -149,7 +169,8 @@ namespace NuGet4Mono {
             manifest.Metadata.Copyright = ainfo.Copyright;
 
             // Authors
-            if (ainfo.Authors != null) {
+            if (ainfo.Authors != null)
+            {
                 manifest.Metadata.Authors = ainfo.Authors.Keys.Aggregate((key, next) => key + "," + next);
                 manifest.Metadata.Owners = ainfo.Authors.Keys.Aggregate((key, next) => key + "," + next);
             }
@@ -158,7 +179,7 @@ namespace NuGet4Mono {
             manifest.Metadata.Description = ainfo.Description;
 
             // Icon Url
-            if ( ainfo.IconUrl != null )
+            if (ainfo.IconUrl != null)
                 manifest.Metadata.IconUrl = ainfo.IconUrl.ToString();
 
             // Id
@@ -179,56 +200,57 @@ namespace NuGet4Mono {
             manifest.Metadata.Title = ainfo.ProductTitle;
 
             // Dependencies
-            if (deps != null) {
+            if (deps != null)
+            {
                 manifest.Metadata.DependencySets = new List<ManifestDependencySet>();
 
-                foreach (var frameworkVersion in deps.Select<PackageReference, FrameworkName>(pr => pr.TargetFramework).Distinct().ToArray()) {
+                NetPortableProfile npp = new NetPortableProfile(ainfo.TargetFramework, new FrameworkName[1] { new FrameworkName(ainfo.TargetFramework) });
 
-                    NetPortableProfile npp = new NetPortableProfile("test", new FrameworkName[1]{ frameworkVersion });
+                ManifestDependencySet mds = new ManifestDependencySet();
+                mds.Dependencies = new List<ManifestDependency>();
+                mds.TargetFramework = npp.CustomProfileString;
 
-                    ManifestDependencySet mds = new ManifestDependencySet();
-                    mds.Dependencies = new List<ManifestDependency>();
-                    mds.TargetFramework = npp.CustomProfileString;
+                manifest.Metadata.DependencySets.Add(mds);
+                foreach (var dep in deps)
+                {
+                    ManifestDependency md = new ManifestDependency();
+                    md.Id = dep.Id;
+                    md.Version = dep.Version.ToNormalizedString();
 
-                    manifest.Metadata.DependencySets.Add(mds);
-                    foreach (var dep in deps.Where(d => d.TargetFramework == frameworkVersion).ToArray()) {
-
-                        ManifestDependency md = new ManifestDependency();
-                        md.Id = dep.Id;
-                        md.Version = dep.Version.ToNormalizedString();
-
-                        mds.Dependencies.Add(md);
-
-
-                    }
+                    mds.Dependencies.Add(md);
                 }
             }
 
             return manifest;
         }
 
-        static string ManifestVersionFromAssembly(AssemblyInfo ainfo){
+        static string ManifestVersionFromAssembly(AssemblyInfo ainfo)
+        {
 
             string version_string = ainfo.Version;
 
             Version semver = ainfo.SemVersion;
 
-            if (!string.IsNullOrEmpty(build_prefix)) {
+            if (!string.IsNullOrEmpty(build_prefix))
+            {
                 if (string.IsNullOrEmpty(revnumber)) revnumber = semver.Revision.ToString();
                 version_string = string.Format("{0}.{1}.{2}-{3}{4}", semver.Major, semver.Minor, semver.Build, build_prefix, revnumber);
             }
 
-            if (!string.IsNullOrEmpty(gitflow)) {
+            if (!string.IsNullOrEmpty(gitflow))
+            {
                 Match match = Regex.Match(gitflow, @"(?:(?'origin'origin)\/)?(?:(?'prefix'\w+)\/)?(?'branch'[\w_.]+)");
                 if (!match.Success)
                     throw new FormatException("gitflow branch not valid : " + gitflow);
-                if (!string.IsNullOrEmpty(match.Groups["prefix"].Value)) {
-                    switch (match.Groups["prefix"].Value) {
+                if (!string.IsNullOrEmpty(match.Groups["prefix"].Value))
+                {
+                    switch (match.Groups["prefix"].Value)
+                    {
                         case "feature":
-                            version_string = string.Format("{0}.{1}.{2}-ft{3}{4}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value.Replace("_","").Replace(".",""), DateTime.Now.ToString("yyyyMMddTHHmmss"));
+                            version_string = string.Format("{0}.{1}.{2}-ft{3}{4}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value.Replace("_", "").Replace(".", ""), DateTime.Now.ToString("yyyyMMddTHHmmss"));
                             break;
                         case "hotfix":
-                            version_string = string.Format("{0}.{1}.{2}-hf{3}{4}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value.Replace("_","").Replace(".",""), DateTime.Now.ToString("yyyyMMddTHHmmss"));
+                            version_string = string.Format("{0}.{1}.{2}-hf{3}{4}", semver.Major, semver.Minor, semver.Build, match.Groups["branch"].Value.Replace("_", "").Replace(".", ""), DateTime.Now.ToString("yyyyMMddTHHmmss"));
                             break;
                         case "release":
                             version_string = string.Format("{0}.{1}.{2}-rc{3}", semver.Major, semver.Minor, semver.Build, DateTime.Now.ToString("yyyyMMddTHHmmss"));
@@ -236,8 +258,11 @@ namespace NuGet4Mono {
                         default:
                             throw new FormatException("gitflow branch directory not valid : " + match.Groups["prefix"].Value);
                     }
-                } else {
-                    switch (match.Groups["branch"].Value) {
+                }
+                else
+                {
+                    switch (match.Groups["branch"].Value)
+                    {
                         case "master":
                             version_string = string.Format("{0}.{1}.{2}", semver.Major, semver.Minor, semver.Build);
                             break;
@@ -249,26 +274,32 @@ namespace NuGet4Mono {
                     }
                 }
             }
-            if (!string.IsNullOrEmpty(spec_version)){
+            if (!string.IsNullOrEmpty(spec_version))
+            {
                 version_string = spec_version;
             }
             return version_string;
         }
 
-        static ManifestFile ManifestFileFromContent(string content){
+        static ManifestFile ManifestFileFromContent(string content)
+        {
 
             if (content.Contains(",")) return ManifestFileForContent(content);
 
-            try{
+            try
+            {
                 var assembly = Assembly.LoadFile(content);
                 return ManifestFileForAssembly(assembly, content);
-            }catch (Exception){
+            }
+            catch (Exception)
+            {
                 //is not an assembly, we add as content
                 return ManifestFileForContent(content);
             }
         }
 
-        static ManifestFile ManifestFileForAssembly(Assembly assembly, string path){
+        static ManifestFile ManifestFileForAssembly(Assembly assembly, string path)
+        {
             ManifestFile mf = new ManifestFile();
 
             AssemblyInfo ainfo = new AssemblyInfo(assembly);
@@ -277,7 +308,8 @@ namespace NuGet4Mono {
 
             string version = "";
 
-            if (string.IsNullOrEmpty(ainfo.TargetFramework)) { 
+            if (string.IsNullOrEmpty(ainfo.TargetFramework))
+            {
 
                 if (assembly.ImageRuntimeVersion.StartsWith("v2.0"))
                     version = "/net20";
@@ -288,9 +320,10 @@ namespace NuGet4Mono {
                 if (assembly.ImageRuntimeVersion.StartsWith("v4.5"))
                     version = "/net45";
             }
-            else{
+            else
+            {
 
-                NetPortableProfile npp = new NetPortableProfile("test", new FrameworkName[1]{new FrameworkName(ainfo.TargetFramework)});
+                NetPortableProfile npp = new NetPortableProfile("test", new FrameworkName[1] { new FrameworkName(ainfo.TargetFramework) });
                 version = "/" + npp.CustomProfileString;
             }
 
@@ -299,50 +332,67 @@ namespace NuGet4Mono {
             return mf;
         }
 
-        static ManifestFile ManifestFileForContent(string contentPath){
+        static ManifestFile ManifestFileForContent(string contentPath)
+        {
             var contentlist = contentPath.Split(",".ToCharArray());
             var source = contentlist[0];
             var target = contentlist.Length > 1 ? contentlist[1] : contentlist[0];
 
             bool exists = false;
-            if (source.Contains("/")) {
+            if (source.Contains("/"))
+            {
 
-                if(source.Contains("/**/")){
+                if (source.Contains("/**/"))
+                {
                     var dir = source.Substring(0, source.LastIndexOf("/**/"));
                     var pattern = source.Substring(source.LastIndexOf("/**/") + 4);
-                    string [] subdirectoryEntries = Directory.GetDirectories(dir);
-                    foreach (string subdirectory in subdirectoryEntries) {
+                    string[] subdirectoryEntries = Directory.GetDirectories(dir);
+                    foreach (string subdirectory in subdirectoryEntries)
+                    {
                         var subdirectory2 = subdirectory.Substring(subdirectory.LastIndexOf("/") + 1);
                         var source2 = source.Replace("/**/", "/" + subdirectory2 + "/");
                         var dir2 = source2.Substring(0, source2.LastIndexOf("/"));
                         var pattern2 = source2.Substring(source2.LastIndexOf("/") + 1);
-                        try{
+                        try
+                        {
                             Directory.EnumerateFiles(dir2, pattern2).Any();
                             exists = true;
                             break;
-                        }catch(Exception){
+                        }
+                        catch (Exception)
+                        {
                         }
                     }
-                } else {
+                }
+                else
+                {
                     var dir = source.Substring(0, source.LastIndexOf("/"));
                     var pattern = source.Substring(source.LastIndexOf("/") + 1);
-                    try{
+                    try
+                    {
                         Directory.EnumerateFiles(dir, pattern).Any();
                         exists = true;
-                    }catch(Exception){
+                    }
+                    catch (Exception)
+                    {
                     }
                 }
-            } else {
+            }
+            else
+            {
                 FileInfo fileinfo = new FileInfo(source);
                 exists = fileinfo.Exists;
             }
 
-            if (exists) {
+            if (exists)
+            {
                 ManifestFile mf = new ManifestFile();
                 mf.Source = source;
                 mf.Target = target;
                 return mf;
-            } else {
+            }
+            else
+            {
                 return null;
             }
         }
