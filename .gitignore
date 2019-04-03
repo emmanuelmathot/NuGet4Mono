@@ -39,6 +39,6 @@ Thumbs.db
 #dotCover
 *.dotCover
 NuGet4Mono.*.nupkg
-*.nuspec
+NuGet4Mono.nuspec
 target
 /.vs

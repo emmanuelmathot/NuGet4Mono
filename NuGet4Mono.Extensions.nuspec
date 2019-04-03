@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NuGet4Mono.Extensions</id>
+    <version>0.8.0</version>
+    <title>NuGet4Mono.Extensions</title>
+    <authors>Emmanuel Mathot</authors>
+    <owners>Emmanuel Mathot</owners>
+    <licenseUrl>https://github.com/emmanuelmathot/NuGet4Mono/License</licenseUrl>
+    <projectUrl>https://github.com/emmanuelmathot/NuGet4Mono</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Extensions for using nuget with projects developed with Mono</description>
+  </metadata>
+  <files>
+    <file src="NuGet4Mono.Extensions/bin/NuGet4Mono.Extensions.dll" target="lib/net45" />
+  </files>
+</package>
