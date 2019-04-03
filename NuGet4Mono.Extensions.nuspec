@@ -12,6 +12,6 @@
     <description>Extensions for using nuget with projects developed with Mono</description>
   </metadata>
   <files>
-    <file src="NuGet4Mono.Extensions/bin/Release/NuGet4Mono.Extensions.dll" target="lib/net45" />
+    <file src="NuGet4Mono.Extensions/bin/NuGet4Mono.Extensions.dll" target="lib/net45" />
   </files>
 </package>
