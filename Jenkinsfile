@@ -36,7 +36,8 @@ pipeline {
         echo "Build nuget packages"
         sh "mono NuGet4Mono/bin/NuGet4Mono.exe -g origin/${env.BRANCH_NAME} -p ${workspace}/NuGet4Mono/packages.config ${workspace}/NuGet4Mono/bin/NuGet4Mono.exe"
         sh 'cat *.nuspec'
-        sh 'nuget pack -OutputDirectory build'
+        sh 'nuget pack NuGet4Mono.nuspec -OutputDirectory build'
+        sh 'nuget pack NuGet4Mono.Extensions.nuspec -OutputDirectory build'
         sh "echo ${params.NUGET_PUBLISH}"
         echo "Build package dependencies"
         sh "sudo yum-builddep -y $WORKSPACE/build/SPECS/nuget4mono.spec"
