@@ -35,7 +35,7 @@ pipeline {
       steps {
         echo "Build nuget packages"
         sh "mono NuGet4Mono/bin/NuGet4Mono.exe -g origin/${env.BRANCH_NAME} -p ${workspace}/NuGet4Mono/packages.config ${workspace}/NuGet4Mono/bin/NuGet4Mono.exe"
-        sh "mono NuGet4Mono.Extensions/bin/NuGet4Mono.Extensions.dll -g origin/${env.BRANCH_NAME} -p ${workspace}/NuGet4Mono.Extensions/packages.config ${workspace}/NuGet4Mono.Extensions/bin/NuGet4Mono.Extensions.dll"
+        sh "mono NuGet4Mono.Extensions/bin/NuGet4Mono.Extensions.dll -g origin/${env.BRANCH_NAME} ${workspace}/NuGet4Mono.Extensions/bin/NuGet4Mono.Extensions.dll"
         sh 'cat *.nuspec'
         sh 'nuget pack -OutputDirectory build'
         sh "echo ${params.NUGET_PUBLISH}"
