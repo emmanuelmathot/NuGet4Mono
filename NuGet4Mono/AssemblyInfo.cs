@@ -4,7 +4,7 @@ using System.IO;
 using NuGet4Mono.Extensions;
 using System.Collections.Generic;
 using System.Runtime.Versioning;
-
+using System.Linq;
 
 namespace NuGet4Mono {
 
@@ -123,9 +123,9 @@ namespace NuGet4Mono {
         public Dictionary<string,string> Authors {
 
             get {
-                object[] attributes = assembly.GetCustomAttributes(typeof(AssemblyAuthorsAttribute), false);
-                if (attributes.Length > 0)
-                    return ((AssemblyAuthorsAttribute)attributes[0]).Authors;
+                var attributes = assembly.GetCustomAttributes<AssemblyAuthorsAttribute>();
+                if (attributes.Count() > 0)
+                    return attributes.First().Authors;
                 else
                     return null;
             }
