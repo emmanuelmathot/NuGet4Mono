@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace NuGet4Mono.Extensions {
     
-    [AttributeUsage(AttributeTargets.Assembly)]
+    [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
     public class AssemblyAuthorsAttribute : Attribute {
         
         Dictionary<string,string> authors;

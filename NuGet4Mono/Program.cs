@@ -21,7 +21,6 @@ namespace NuGet4Mono
         static string build_prefix;
         static string revnumber;
         static string gitflow;
-        static List<string> content;
 
         public static void Main(string[] args)
         {
@@ -127,15 +126,10 @@ namespace NuGet4Mono
             //Get first Assembly to initiate the manifest
             foreach (string assemblyPath in contents)
             {
-                try
-                {
-                    var assembly = Assembly.LoadFile(assemblyPath);
-                    manifest = InitiateManifestFromAssembly(assembly, deps);
-                    break;
-                }
-                catch (Exception e)
-                {
-                }
+                var assembly = Assembly.LoadFile(assemblyPath);
+                manifest = InitiateManifestFromAssembly(assembly, deps);
+                break;
+
             }
 
             if (manifest != null)
