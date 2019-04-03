@@ -6,6 +6,6 @@
 [assembly: NuGet4Mono.Extensions.AssemblyIconUrl("")]
 [assembly: NuGet4Mono.Extensions.AssemblyProjectUrl("https://github.com/emmanuelmathot/NuGet4Mono")]
 [assembly: NuGet4Mono.Extensions.AssemblyLicenseUrl("https://github.com/emmanuelmathot/NuGet4Mono/License")]
-[assembly: AssemblyVersion("0.7.0.*")]
-[assembly: AssemblyInformationalVersion("0.7.0")]
+[assembly: AssemblyVersion("0.8.0.*")]
+[assembly: AssemblyInformationalVersion("0.8.0")]
 

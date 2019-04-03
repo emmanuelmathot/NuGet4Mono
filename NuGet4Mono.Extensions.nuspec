@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>NuGet4Mono.Extensions</id>
-    <version>0.7.0</version>
+    <version>0.8.0</version>
     <title>NuGet4Mono.Extensions</title>
     <authors>Emmanuel Mathot</authors>
     <owners>Emmanuel Mathot</owners>
